@@ -1,101 +1,112 @@
-#ifndef _MAIN_H_
-#define _MAIN_H_
+#ifndef _SHELL_H_
+#define _SHELL_H_
 
-#define DELIM " \n\t\a\r:"
-#include <string.h>
-#include <stdarg.h>
-#include <stdbool.h>
+/**###### environ var ######*/
+
+extern char **environ;
+
+/**##### MACROS ######*/
+
+#define BUFSIZE 1024
+#define DELIM " \t\r\n\a"
+#define PRINTER(c) (write(STDOUT_FILENO, c, _strlen(c)))
+
+/**###### LIBS USED ######*/
+
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <linux/limits.h>
 
-extern char **__environ;
-int count_token(char *buffer, char *delim);
-char **tokenize_line(char *buffer, char *delim, int token_no);
+
+
+
+
+/**###### STRING FUNCTION ######*/
+
+char *_strtok(char *str, const char *tok);
+unsigned int check_delim(char c, const char *str);
+char *_strncpy(char *dest, char *src, int n);
+int _strlen(char *s);
+int _putchar(char c);
+int _atoi(char *s);
 void _puts(char *str);
-void exec_cmd(char **arg, char **argv, int count);
-char *_getenv(const char *name);
-char *_strchr(char *str, int c);
-void print_PATH(char *envVar, char *delim);
-char *_strdup(char *org);
-void free_buffer(char **argv);
+int _strcmp(char *s1, char *s2);
+int _isalpha(int c);
+void array_rev(char *arr, int len);
+int intlen(int num);
+char *_itoa(unsigned int n);
+char *_strcat(char *dest, char *src);
+char *_strcpy(char *dest, char *src);
+char *_strchr(char *s, char c);
+int _strncmp(const char *s1, const char *s2, size_t n);
+char *_strdup(char *str);
 
-#include <limits.h>
-#include <stdint.h>
+/**###### MEMORIE  MANGMENT ####*/
 
-#define HEX 16
-#define DECIMAL 10
+void free_env(char **env);
+void *fill_an_array(void *a, int el, unsigned int len);
+char *_memcpy(char *dest, char *src, unsigned int n);
+void *_calloc(unsigned int size);
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
+void free_all(char **input, char *line);
 
-void _putchar_c(char c);
-void _putchar(va_list a);
-void print_str(va_list a);
-void print_int(va_list a);
-int _printf(const char *format, ...);
-void unsignedNumberToString(uint64_t, int, char *);
-void numberToString(int64_t, int, char *);
+/**###### INPUT Function ######*/
+
+void prompt(void);
+void signal_to_handel(int sig);
+char *_getline(void);
+
+/** ###### Command parser and extractor ###*/
+
+int path_cmd(char **line);
+char *_getenv(char *name);
+char **parse_cmd(char *cmd);
+int handle_builtin(char **cmd, int er);
+void read_file(char *filename, char **argv);
+char *build(char *token, char *value);
+int check_builtin(char **cmd);
+void creat_envi(char **envi);
+int check_cmd(char **tokens, char *line, int count, char **argv);
+void treat_file(char *line, int counter, FILE *fd, char **argv);
+void exit_bul_for_file(char **cmd, char *line, FILE *fd);
+
+/** ####BUL FUNC #####*/
+
+void hashtag_handle(char *buff);
+int history(char *input);
+int history_dis(char **cmd, int er);
+int dis_env(char **cmd, int er);
+int change_dir(char **cmd, int er);
+int display_help(char **cmd, int er);
+int echo_bul(char **cmd, int er);
+void  exit_bul(char **cmd, char *input, char **argv, int c);
+int print_echo(char **cmd);
+
+/** ####error handle and Printer ####*/
+void print_number(unsigned int n);
+void print_number_in(int n);
+void print_error(char *line, int c, char **argv);
+void _prerror(char **argv, int c, char **cmd);
+
 
 /**
- * struct Cspecs - structure for format specifiers
- * @cs: Letter representing format specifier
- * @f: function pointer
- * Description: Structure for printf format specifiers
+ * struct bulltin - contain bultin to handle and function to excute
+ * @command:pointer to char
+ * @fun:fun to excute when bultin true
  */
 
-typedef struct Cspecs
-{
-	char cs;
-	void (*f)();
-} cs_t;
-
-
-/**
- * struct builtins - it shows the builtins in our shell
- * @command: the command we entered
- * @func : function pointer to the actual command in the shell
- * that would be displayed
- * Description: structure for my_builtins
- */
-typedef struct builtins
+typedef struct  bulltin
 {
 	char *command;
-	void (*func)(char **);
-} builtins;
-
-/**
- * struct flags - struct to determine interactive vs non
- * interactive mode
- * @interactive: Mode type
- * Description: Struct for our mode type
- */
-struct flags
-{
-	bool interactive;
-};
-struct flags flag;
-
-int builtin_size(void);
-void shell_exit(char **args);
-void shell_cd(char **args);
-void print_env(char **args);
-void shell_help(char **args);
-char *_strcpy(char *dest, char *src);
-int _strcmp(char *s1, char *s2);
-int _strlen(const char *s);
-char *_strcat(char *dest, char *src);
-int _strncmp(const char *s1, const char *s2, size_t n);
-int exec_builtin_commands(char **argv);
-char **tokenize_PATH(char *envVar, char *delim);
-char *find_path(char **pathTokens, char **argv);
-char *append_to_directory(char *directory, char **argv, char *character);
-int prompt(void);
-void ctrl_C(int signum);
-int print(char *var, int fd);
-char *command_dir(char **cmd);
+	int (*fun)(char **line, int er);
+} bul_t;
 
 #endif
